@@ -1,0 +1,39 @@
+0001 Imports System
+Error: 'End Module' declaration is missing.
+0002 ''''Test Load
+0003 Imports System.IO
+0004 'Inicio del c�digo para leer un archivo
+0005 Module Program
+0006 
+0007     Sub Main(args As String())
+0008         Console.WriteLine("==========================================================")
+0009         Console.WriteLine("        Este codigo lo que hace es leer un archivo")
+0010         Console.WriteLine("==========================================================")
+0011         'Declaracion de variables
+0012         Dim LecturaArchivo As IO.StreamReader
+0013         Dim Lineatexto As String
+0014         Dim Bandera As Boolean = False
+0015         Dim NombreArchivo As String = "curso.txt"
+0016 
+0017         'Realiza la lectura del archivo
+0018         LecturaArchivo = New IO.StreamReader(NombreArchivo)
+0019         Try
+Error: Unclosed TRY.
+0020             While Not Bandera
+0021                 Lineatexto = LecturaArchivo.ReadLine()
+0022                 If Lineatexto Is Nothing Then
+0023                 
+0024                     Bandera = True
+0025                 Else
+0026                     Console.WriteLine(Lineatexto)
+0027                 End If
+0028             End While
+0029             'Se cierra el archivo
+0030             LecturaArchivo.Close()
+0031         Cath problema As Exception
+0032             Console.WriteLine("Ha ocurrido un inconveniente " + problema.Message())
+0033         End ry
+0034         Console.WriteLine("==========================================================")
+0035     End Sub
+0036 
+0037 'Fin del c�digo para leer un archivo
