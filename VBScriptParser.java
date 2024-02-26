@@ -27,8 +27,6 @@ public class VBScriptParser {
     public void parse() {
 
 
-        int subMainCount = 0; // Contador para Sub Main
-
         validateModuleStructure();
 
         for (Token token : tokens) {
@@ -37,6 +35,10 @@ public class VBScriptParser {
                     stats.commentCount++;
                     break;
                 case DIM_STATEMENT:
+                if (stats.moduleProgramCount < 1) {
+                    errorReporter.report(token.getLineNumber(), "Declaración DIM encontrada antes de 'Module Program'.");
+                }
+                    validateDimStatement(token);
                     stats.dimStatementCount++;
                     break;
                 case MODULE_PROGRAM:
@@ -47,6 +49,9 @@ public class VBScriptParser {
                     break;
                 case IMPORT:
                     stats.importCount++;
+                    if (stats.moduleProgramCount > 0) {
+                        errorReporter.report(token.getLineNumber(), "'Imports' debe ser declarado antes de Module Program.");
+                    }
                     break;
                 case SUB_MAIN:
                     stats.subMainCount++;
@@ -67,6 +72,7 @@ public class VBScriptParser {
                     break;
                 case CATCH_EXCEPTION:
                     stats.catchCount++;
+                    validateCatchStatement(token);
                     if (tryCatchStack.isEmpty() || tryCatchStack.peek().getType() != Token.Type.TRY) {
                         errorReporter.report(token.getLineNumber(), "CATCH sin un TRY previo.");
                     } else {
@@ -78,7 +84,7 @@ public class VBScriptParser {
                 case END_TRY:
                     stats.endTryCount++;
                     if (tryCatchStack.isEmpty() || tryCatchStack.peek().getType() != Token.Type.CATCH_EXCEPTION) {
-                        errorReporter.report(token.getLineNumber(), "END TRY without a preceding CATCH.");
+                        errorReporter.report(token.getLineNumber(), "END TRY sin TRY o CATCH.");
                     } else {
                         // Correctamente encontramos un CATCH para este END TRY
                         tryCatchStack.pop(); // Eliminamos el CATCH ya que encontramos su END TRY correspondiente
@@ -116,13 +122,13 @@ public class VBScriptParser {
         // Verificar si hay estructuras TRY-CATCH sin cerrar
         if (!tryCatchStack.isEmpty()) {
             Token unclosedToken = tryCatchStack.peek();
-            errorReporter.report(unclosedToken.getLineNumber(), "Estructura " + unclosedToken.getType() + " sin cerrar.");
+            errorReporter.report(unclosedToken.getLineNumber(), "Estructura " + unclosedToken.getType() + " sin cerrar. Revise si existe End Try y Catch correspondientes.");
         }
 
         // Verificar si hay estructuras WHILE sin cerrar
         if (!whileStack.isEmpty()) {
             Token unclosedToken = whileStack.peek();
-            errorReporter.report(unclosedToken.getLineNumber(), "WHILE sin cerrar.");
+            errorReporter.report(unclosedToken.getLineNumber(), "Estructura " + unclosedToken.getType() + " sin cerrar.");
         }
         
     }
@@ -143,7 +149,7 @@ public class VBScriptParser {
             if (token.getType() == Token.Type.MODULE_PROGRAM) {
                 if (moduleStartFound) {
     
-                    errorReporter.report(token.getLineNumber(), "Multiples declaraciones de 'Module Program' encontradas.");
+                    errorReporter.report(token.getLineNumber(), "'Module Program' duplicado.");
                 } else {
                     moduleStartFound = true;
                 }
@@ -151,7 +157,7 @@ public class VBScriptParser {
             if (token.getType() == Token.Type.END_MODULE) {
                 if (moduleEndFound) {
             
-                    errorReporter.report(token.getLineNumber(), "Multiples declaraciones de 'End Module' encontradas.");
+                    errorReporter.report(token.getLineNumber(), "'End Module' duplicado.");
                 } else {
                     moduleEndFound = true;
                 }
@@ -164,14 +170,6 @@ public class VBScriptParser {
                     errorReporter.report(token.getLineNumber(), "Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.");
                 }
             }            
-        }
-
-        if (!moduleStartFound) {
-            errorReporter.report(1, "Falta declaración de 'Module Program'.");
-        }
-
-        if (!moduleEndFound) {
-            errorReporter.report(1, "Falta declaración de 'End Module'.");
         }
     }
     private void validateSubMain(Token token) {
@@ -187,58 +185,27 @@ public class VBScriptParser {
             errorReporter.report(token.getLineNumber(), "Formato incorrecto en SUB MAIN.");
         }
     }
-    
 
-    private void validateModuleProgram() {
-        boolean firstModuleProgramFound = checkForFirstModuleProgram();
-        boolean duplicateModuleProgramFound = checkForDuplicateModuleProgramDeclarations();
+    private void validateCatchStatement(Token token) {
+        String text = token.getText().trim();
+        // La expresión regular verifica que después de 'Catch' haya un identificador alfanumerico seguido de 'As Exception'
+        String catchPattern = "Catch\\s+[a-zA-Z]\\w*\\s+As\\s+Exception";
     
-        // Report missing "Module Program" only if it was not found and no duplicates were found
-        if (!firstModuleProgramFound && !duplicateModuleProgramFound) {
-            reportMissingModuleProgram();
+        if (!text.matches(catchPattern)) {
+            errorReporter.report(token.getLineNumber(), "Formato incorrecto en CATCH.");
+        }
+    }
+
+    private void validateDimStatement(Token token) {
+        String text = token.getText().trim();
+        //Dim [variableName] As [Type]'
+        // [variableName] empieza con una letra y puede contener números y letras adicionales.
+        String dimPattern = "Dim\\s+[a-zA-Z]\\w*\\s+As\\s+.*";
+    
+        if (!text.matches(dimPattern)) {
+            errorReporter.report(token.getLineNumber(), "Formato incorrecto en DIM.");
         }
     }
     
     
-    private boolean checkForFirstModuleProgram() {
-        boolean firstModuleProgramFound = false;
-    
-        for (Token token : tokens) {
-            if (token.getType() == Token.Type.MODULE_PROGRAM) {
-                if (!firstModuleProgramFound) {
-                    firstModuleProgramFound = true;
-                } else {
-                    break;
-                }
-            } else if (!firstModuleProgramFound && (token.getType() != Token.Type.COMMENT && token.getType() != Token.Type.IMPORT)) {
-                errorReporter.report(token.getLineNumber(), "Only comments or imports are allowed before 'Module Program'.");
-            }
-        }
-    
-        return firstModuleProgramFound;
-    }
-    
-    private boolean checkForDuplicateModuleProgramDeclarations() {
-        boolean firstModuleProgramFound = false;
-        boolean duplicateFound = false;
-    
-        for (Token token : tokens) {
-            if (token.getType() == Token.Type.MODULE_PROGRAM) {
-                if (firstModuleProgramFound) {
-                    errorReporter.report(token.getLineNumber(), "'Module Program' has already been declared.");
-                    duplicateFound = true;
-                } else {
-                    firstModuleProgramFound = true; // Mark the first "Module Program" found
-                }
-            }
-        }
-    
-        return duplicateFound;
-    }
-    
-    
-    private void reportMissingModuleProgram() {
-        // If "Module Program" is missing, report it
-        errorReporter.report(1, "'Module Program' declaration is missing.");
-    }
 }

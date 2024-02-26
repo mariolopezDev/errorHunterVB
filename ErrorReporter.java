@@ -31,6 +31,13 @@ public class ErrorReporter {
                 writer.write(String.format("%04d %s", lineNumber, lineText));
                 writer.newLine();
                 
+            // Verificar si la línea excede los 90 caracteres
+            if (lineText.length() > 90) {
+                String lengthError = String.format("Error en línea %04d: la línea excede los 90 caracteres.", lineNumber);
+                writer.write(lengthError);
+                writer.newLine();
+            }
+
                 if (errors.containsKey(lineNumber)) {
                     writer.write(errors.get(lineNumber));
                     writer.newLine();
@@ -59,8 +66,6 @@ public class ErrorReporter {
         }
     }
 
-
-
     public void reportSummary(ParserStatistics stats) throws IOException {
         String errorFilePath = basePath + "-Errores.txt";
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(errorFilePath), StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
@@ -69,61 +74,69 @@ public class ErrorReporter {
             writer.write("Número de Comentarios: " + stats.getCommentCount());
             writer.newLine();
             writer.write("Número de Declaraciones DIM: " + stats.getDimStatementCount());
+            
             writer.newLine();
+            writer.write("------------------------------------");
+            writer.newLine();
+
             //
             //Analiza si hay tokens mismatches y los reporta
-
-            
-            if (stats.getModuleProgramCount() == 0) {
-                writer.write("Error: 'Module Program' inexistente.\n");
-            } else if (stats.getModuleProgramCount() > 1) {
-                writer.write("Error: Múltiples declaraciones de Module Program.\n");
-            } 
 
             if (stats.getModuleProgramCount() != stats.getEndModuleCount()) {
                 writer.write("Error: Mismatch en el número de declaraciones de Module y End Module.\n");
             }
 
-
+            if (stats.getModuleProgramCount() == 0) {
+                writer.write("Error: 'Module Program' inexistente.\n");
+            } else if (stats.getModuleProgramCount() > 1) {
+                writer.write("Error: Múltiples declaraciones de Module Program.\n");
+            } 
+            
+            if (stats.getEndModuleCount() == 0) {
+                writer.write("Error: 'End Module' inexistente.\n");
+            } else if (stats.getEndModuleCount() > 1) {
+                writer.write("Error: Múltiples declaraciones de End Module.\n");
+            }
+            
             if (stats.getSubMainCount() != stats.getEndSubCount()) {
                 writer.write("Error: Mismatch en el número de declaraciones de Sub Main y End Sub.\n");
             }
+
+            if (stats.getSubMainCount() > 1) {
+                writer.write("Error: Múltiples declaraciones de Sub Main.\n");
+            } else if (stats.getSubMainCount() == 0) {
+                writer.write("Error: 'Sub Main' inexistente.\n");
+            }
+
+            if (stats.getEndSubCount() > 1) {
+                writer.write("Error: Múltiples declaraciones de End Sub.\n");
+            } else if (stats.getEndSubCount() == 0) {
+                writer.write("Error: 'End Sub' inexistente.\n");
+            }
+
+            
+ 
+
             if (stats.getTryCount() != stats.getEndTryCount()) {
                 writer.write("Error: Mismatch en el número de declaraciones de Try y End Try.\n");
             }
-
-            //Reconoce si falta el open o el close de un bloque
-            if (stats.getModuleProgramCount() > stats.getEndModuleCount()) {
-                writer.write("Error: Falta un End Module.\n");
-            } else if (stats.getModuleProgramCount() < stats.getEndModuleCount()) {
-                writer.write("Error: Falta un Module Program.\n");
-            }
-            
-            if (stats.getSubMainCount() > stats.getEndSubCount()) {
-                writer.write("Error: Falta el End Sub del Sub Main.\n");
-            } else if (stats.getSubMainCount() < stats.getEndSubCount()) {
-                writer.write("Error: Falta un Sub Main.\n");
-            }
-            
             
             if (stats.getTryCount() > stats.getEndTryCount()) {
-                writer.write("Error: Falta un End Try.");
-            } else if (stats.getTryCount() < stats.getEndTryCount()) {
-                writer.write("Error: Falta un Try.\n");
+                writer.write("Error: Falta declaración de 'End Try'.\n");
+            } else if ((stats.getCatchCount() > stats.getTryCount()) || (stats.getTryCount() < stats.getEndTryCount())) {
+                writer.write("Error: Falta declaración de 'Try'.\n");
             }
 
             if (stats.getWhileCount() != stats.getEndWhileCount()) {
                 writer.write("Error: Mismatch en el número de declaraciones de While y End While.\n");
-            }
+            }          
 
             if (stats.getWhileCount() > stats.getEndWhileCount()) {
-                writer.write("Error: Falta un End While.");
+                writer.write("Error: Falta declaración de 'End While'.");
             } else if (stats.getWhileCount() < stats.getEndWhileCount()) {
-                writer.write("Error: Falta un While.");
+                writer.write("Error: Falta declaración de 'While'.");
             }
 
-
-            writer.newLine();
             writer.write("------------------------------------");
             writer.newLine();
         } catch (Exception e) {
