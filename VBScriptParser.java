@@ -38,6 +38,15 @@ public class VBScriptParser {
                 case DIM_STATEMENT:
                     stats.dimStatementCount++;
                     break;
+                case MODULE_PROGRAM:
+                    stats.moduleProgramCount++;
+                    break;
+                case END_MODULE:
+                    stats.endModuleCount++;
+                    break;
+                case IMPORT:
+                    stats.importCount++;
+                    break;
                 case SUB_MAIN:
                     stats.subMainCount++;
                     validateSubMain(token);

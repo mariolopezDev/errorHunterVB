@@ -28,11 +28,13 @@ public class Main {
             ArrayList<Token> tokens = lexer.tokenize();
 
             VBScriptParser parser = new VBScriptParser(tokens, errorReporter);
-            parser.parse();
             
+            parser.parse();
+
             errorReporter.writeHeader(vbFilePath);
             errorReporter.reportSummary(parser.stats);
             errorReporter.writeErrorsToFile(lines);
+            
             if (errorReporter.hasErrors()) {
                 System.out.println("Se encontraron errores. Revise el archivo " + basePath + "-Errores.txt");
             } else {

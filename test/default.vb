@@ -1,7 +1,7 @@
 Imports System
 Imports System.IO
 
-Modle Program
+Module Program
     Sub Main (args As String())
         Console.WriteLine("==========================================================")
         Console.WriteLine("        Este codigo lo que hace es leer un archivo")

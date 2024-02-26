@@ -75,7 +75,7 @@ public class ErrorReporter {
 
             
             if (stats.getModuleProgramCount() == 0) {
-                writer.write("Error: Falta un Module Program.\n");
+                writer.write("Error: 'Module Program' inexistente.\n");
             } else if (stats.getModuleProgramCount() > 1) {
                 writer.write("Error: Múltiples declaraciones de Module Program.\n");
             } 
