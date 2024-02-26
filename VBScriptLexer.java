@@ -31,8 +31,6 @@ public class VBScriptLexer {
         tokenPatterns.put(Pattern.compile("^Imports\\s+\\w[.\\w]*.*", Pattern.CASE_INSENSITIVE), Token.Type.IMPORT);
         tokenPatterns.put(Pattern.compile("\\bDim\\s+(\\w+)\\s+As\\s+(String|Int|Boolean)\\b", Pattern.CASE_INSENSITIVE), Token.Type.DIM_STATEMENT);
         tokenPatterns.put(Pattern.compile("^\\s*\\bSub\\s+Main.*", Pattern.CASE_INSENSITIVE), Token.Type.SUB_MAIN);
-
-
         tokenPatterns.put(Pattern.compile("\\bEnd\\s+Sub\\b", Pattern.CASE_INSENSITIVE), Token.Type.END_SUB);
         tokenPatterns.put(Pattern.compile("\\bWhile\\b", Pattern.CASE_INSENSITIVE), Token.Type.WHILE);
         tokenPatterns.put(Pattern.compile("\\bEnd\\s+While\\b", Pattern.CASE_INSENSITIVE), Token.Type.END_WHILE);

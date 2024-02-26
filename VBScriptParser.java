@@ -13,6 +13,7 @@ public class VBScriptParser {
 
     private Stack<Token> tryCatchStack = new Stack<>();
     private Stack<Token> subMainStack = new Stack<>();
+    private Stack<Token> whileStack = new Stack<>();
 
     
     public VBScriptParser(List<Token> tokens, ErrorReporter errorReporter) {
@@ -83,6 +84,18 @@ public class VBScriptParser {
                         tryCatchStack.pop(); // Eliminamos el CATCH ya que encontramos su END TRY correspondiente
                     }
                     break;
+                case WHILE:
+                    stats.whileCount++;
+                    whileStack.push(token);
+                    break;
+                case END_WHILE:
+                    stats.endWhileCount++;
+                    if (whileStack.isEmpty()) {
+                        errorReporter.report(token.getLineNumber(), "END WHILE sin un WHILE correspondiente.");
+                    } else {
+                        whileStack.pop();
+                    }
+                    break;
                 // Otros casos y validaciones específicas aquí
                 default:
                     break;
@@ -103,8 +116,15 @@ public class VBScriptParser {
         // Verificar si hay estructuras TRY-CATCH sin cerrar
         if (!tryCatchStack.isEmpty()) {
             Token unclosedToken = tryCatchStack.peek();
-            errorReporter.report(unclosedToken.getLineNumber(), "Unclosed " + unclosedToken.getType() + ".");
+            errorReporter.report(unclosedToken.getLineNumber(), "Estructura " + unclosedToken.getType() + " sin cerrar.");
         }
+
+        // Verificar si hay estructuras WHILE sin cerrar
+        if (!whileStack.isEmpty()) {
+            Token unclosedToken = whileStack.peek();
+            errorReporter.report(unclosedToken.getLineNumber(), "WHILE sin cerrar.");
+        }
+        
     }
 
 
@@ -154,11 +174,17 @@ public class VBScriptParser {
             errorReporter.report(1, "Falta declaración de 'End Module'.");
         }
     }
-
     private void validateSubMain(Token token) {
-        String text = token.getText();
-        if (!text.matches("\\bSub\\s+Main\\s*\\(\\s*([^()]*(\\(\\s*[^()]*\\s*\\))?[^()]*)\\s*\\)\\s*$")) {
-            errorReporter.report(token.getLineNumber(), "Declaración SUB MAIN inválida.");
+        String text = token.getText().replaceAll("\\s+", "");
+        int balance = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '(') balance++;
+            else if (c == ')') balance--;
+            if (balance < 0) break;
+        }
+        if (!text.startsWith("SubMain(") || balance != 0) {
+            errorReporter.report(token.getLineNumber(), "Formato incorrecto en SUB MAIN.");
         }
     }
     

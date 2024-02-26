@@ -2,7 +2,7 @@ Imports System
 Imports System.IO
 
 Module Program
-    Sub Main (args As String())
+    Sub Main (   args As String  (  ())()   )
         Console.WriteLine("==========================================================")
         Console.WriteLine("        Este codigo lo que hace es leer un archivo")
         Console.WriteLine("==========================================================")
@@ -29,6 +29,6 @@ Module Program
             Console.WriteLine("Ha ocurrido un inconveniente " + problema.Message())
         End Try
         Console.WriteLine("==========================================================")
-    End Sb
+    End Sub
 End Module
 'Fin del c�digo para leer un archivo

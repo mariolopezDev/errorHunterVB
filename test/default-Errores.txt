@@ -1,19 +1,16 @@
 Informe de Análisis de test/default.vb
-Fecha de Análisis: 2024-02-25 19:19:04
+Fecha de Análisis: 2024-02-25 19:38:18
 ------------------------------------
 Resumen del Análisis:
 Número de Comentarios: 4
 Número de Declaraciones DIM: 3
-Error: Mismatch en el número de declaraciones de Sub Main y End Sub.
-Error: Falta el End Sub del Sub Main.
 
 ------------------------------------
 0001 Imports System
 0002 Imports System.IO
 0003 
 0004 Module Program
-0005     Sub Main (args As String())
-Error: SUB MAIN sin cerrar.
+0005     Sub Main (   args As String  (  ())()   )
 0006         Console.WriteLine("==========================================================")
 0007         Console.WriteLine("        Este codigo lo que hace es leer un archivo")
 0008         Console.WriteLine("==========================================================")
@@ -40,6 +37,6 @@ Error: SUB MAIN sin cerrar.
 0029             Console.WriteLine("Ha ocurrido un inconveniente " + problema.Message())
 0030         End Try
 0031         Console.WriteLine("==========================================================")
-0032     End Sb
+0032     End Sub
 0033 End Module
 0034 'Fin del c�digo para leer un archivo
