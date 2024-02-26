@@ -23,14 +23,16 @@ public class VBScriptLexer {
         // Recognize comments and string literals
         //tokenPatterns.put(Pattern.compile("^'[^\\w].*"), Token.Type.COMMENT);
 
-        tokenPatterns.put(Pattern.compile("^'.*"), Token.Type.COMMENT);
+        tokenPatterns.put(Pattern.compile("^\\s*'.*"), Token.Type.COMMENT);
         tokenPatterns.put(Pattern.compile("^\"(?:[^\"\\\\]|\\\\.)*\""), Token.Type.STRING_LITERAL);
         // Recognize complete compound structures
         tokenPatterns.put(Pattern.compile("^Module\\s+Program\\b", Pattern.CASE_INSENSITIVE), Token.Type.MODULE_PROGRAM);
         tokenPatterns.put(Pattern.compile("^End\\s+Module\\b", Pattern.CASE_INSENSITIVE), Token.Type.END_MODULE);
         tokenPatterns.put(Pattern.compile("^Imports\\s+\\w[.\\w]*.*", Pattern.CASE_INSENSITIVE), Token.Type.IMPORT);
         tokenPatterns.put(Pattern.compile("\\bDim\\s+(\\w+)\\s+As\\s+(String|Int|Boolean)\\b", Pattern.CASE_INSENSITIVE), Token.Type.DIM_STATEMENT);
-        tokenPatterns.put(Pattern.compile("\\bSub\\s+Main\\(.*\\)\\s*"), Token.Type.SUB_MAIN);
+        tokenPatterns.put(Pattern.compile("^\\s*\\bSub\\s+Main.*", Pattern.CASE_INSENSITIVE), Token.Type.SUB_MAIN);
+
+
         tokenPatterns.put(Pattern.compile("\\bEnd\\s+Sub\\b", Pattern.CASE_INSENSITIVE), Token.Type.END_SUB);
         tokenPatterns.put(Pattern.compile("\\bWhile\\b", Pattern.CASE_INSENSITIVE), Token.Type.WHILE);
         tokenPatterns.put(Pattern.compile("\\bEnd\\s+While\\b", Pattern.CASE_INSENSITIVE), Token.Type.END_WHILE);

@@ -29,6 +29,9 @@ public class Main {
 
             VBScriptParser parser = new VBScriptParser(tokens, errorReporter);
             parser.parse();
+            
+            errorReporter.writeHeader(vbFilePath);
+            errorReporter.reportSummary(parser.stats);
             errorReporter.writeErrorsToFile(lines);
             if (errorReporter.hasErrors()) {
                 System.out.println("Se encontraron errores. Revise el archivo " + basePath + "-Errores.txt");

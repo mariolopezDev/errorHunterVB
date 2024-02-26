@@ -1,39 +1,59 @@
+Informe de Análisis de test/default.vb
+Fecha de Análisis: 2024-02-25 18:48:12
+------------------------------------
+Resumen del Análisis:
+Número de Comentarios: 4
+Número de Declaraciones DIM: 3
+Error: Falta un Module Program.
+Error: Mismatch en el número de declaraciones de Sub Main y End Sub.
+Error: Falta el End Sub del Sub Main.
+
+------------------------------------
 0001 Imports System
-Error: 'End Module' declaration is missing.
-0002 ''''Test Load
-0003 Imports System.IO
-0004 'Inicio del c�digo para leer un archivo
-0005 Module Program
-0006 
-0007     Sub Main(args As String())
+Error: Falta declaración de 'Module Program'.
+0002 Imports System.IO
+0003 
+0004 Modle Program
+0005     Sub Main (args As String())
+Error: SUB MAIN sin cerrar.
+0006         Console.WriteLine("==========================================================")
+0007         Console.WriteLine("        Este codigo lo que hace es leer un archivo")
 0008         Console.WriteLine("==========================================================")
-0009         Console.WriteLine("        Este codigo lo que hace es leer un archivo")
-0010         Console.WriteLine("==========================================================")
-0011         'Declaracion de variables
-0012         Dim LecturaArchivo As IO.StreamReader
-0013         Dim Lineatexto As String
-0014         Dim Bandera As Boolean = False
-0015         Dim NombreArchivo As String = "curso.txt"
-0016 
-0017         'Realiza la lectura del archivo
-0018         LecturaArchivo = New IO.StreamReader(NombreArchivo)
-0019         Try
-Error: Unclosed TRY.
-0020             While Not Bandera
-0021                 Lineatexto = LecturaArchivo.ReadLine()
-0022                 If Lineatexto Is Nothing Then
-0023                 
-0024                     Bandera = True
-0025                 Else
-0026                     Console.WriteLine(Lineatexto)
-0027                 End If
-0028             End While
-0029             'Se cierra el archivo
-0030             LecturaArchivo.Close()
-0031         Cath problema As Exception
-0032             Console.WriteLine("Ha ocurrido un inconveniente " + problema.Message())
-0033         End ry
-0034         Console.WriteLine("==========================================================")
-0035     End Sub
-0036 
-0037 'Fin del c�digo para leer un archivo
+0009         'Declaracion de variables
+0010         Dim LecturaArchivo As IO.StreamReader
+0011         Dim Lineatexto As String
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0012         Dim Bandera As Boolean = False
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0013         Dim NombreArchivo As String = "curso.txt"
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0014 
+0015         'Realiza la lectura del archivo
+0016         LecturaArchivo = New IO.StreamReader(NombreArchivo)
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0017         Try
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0018             While Not Bandera
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0019                 Lineatexto = LecturaArchivo.ReadLine()
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0020                 If Lineatexto Is Nothing Then
+0021                     Bandera = True
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0022                 Else
+0023                     Console.WriteLine(Lineatexto)
+0024                 End If
+0025             End While
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0026             'Se cierra el archivo
+0027             LecturaArchivo.Close()
+0028         Catch problema As Exception
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0029             Console.WriteLine("Ha ocurrido un inconveniente " + problema.Message())
+0030         End Try
+Error: Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.
+0031         Console.WriteLine("==========================================================")
+0032     End Sb
+0033 End Module
+Error: Declaración 'End Module' encontrada antes de 'Module Program'.
+0034 'Fin del c�digo para leer un archivo

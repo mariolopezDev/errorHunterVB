@@ -1,46 +1,64 @@
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * Clase VBScriptParser para analizar y reportar errores en VBScript.
+ */
+
 public class VBScriptParser {
     private List<Token> tokens;
     private ErrorReporter errorReporter;
 
-    private Stack<Token> tryCatchStack = new Stack<>();
+    public ParserStatistics stats = new ParserStatistics();
 
+    private Stack<Token> tryCatchStack = new Stack<>();
+    private Stack<Token> subMainStack = new Stack<>();
+
+    
     public VBScriptParser(List<Token> tokens, ErrorReporter errorReporter) {
         this.tokens = tokens;
         this.errorReporter = errorReporter;
     }
 
+    /**
+     * parse() - Realiza el análisis del VBScript, identificando errores y llevando el conteo de ciertos elementos.
+     */
     public void parse() {
-        // First, validate the presence of "Module Program" and its correct position
-        //validateModuleProgram();
+
+
+        int subMainCount = 0; // Contador para Sub Main
+
         validateModuleStructure();
 
-
-        // After the initial validation, continue with further parsing
-        // and checking for additional structures and syntax rules
         for (Token token : tokens) {
-            // Depending on the type of token, we perform different checks and validations
             switch (token.getType()) {
-                case MODULE_PROGRAM:
-                    // We've already checked for 'Module Program' declaration, so we can ignore it here
+                case COMMENT:
+                    stats.commentCount++;
                     break;
                 case DIM_STATEMENT:
+                    stats.dimStatementCount++;
+                    break;
                 case SUB_MAIN:
+                    stats.subMainCount++;
+                    validateSubMain(token);
+                    subMainStack.push(token);
                     break;
                 case END_SUB:
-                    break;
-                case WHILE:
-                    break;
-                case END_WHILE:
+                    stats.endSubCount++;
+                    if (subMainStack.isEmpty()) {
+                        errorReporter.report(token.getLineNumber(), "END SUB sin un SUB MAIN correspondiente.");
+                    } else {
+                        subMainStack.pop();
+                    }
                     break;
                 case TRY:
+                    stats.tryCount++;
                     tryCatchStack.push(token);
                     break;
                 case CATCH_EXCEPTION:
+                    stats.catchCount++;
                     if (tryCatchStack.isEmpty() || tryCatchStack.peek().getType() != Token.Type.TRY) {
-                        errorReporter.report(token.getLineNumber(), "CATCH without a preceding TRY.");
+                        errorReporter.report(token.getLineNumber(), "CATCH sin un TRY previo.");
                     } else {
                         // Correctamente encontramos un TRY para este CATCH
                         tryCatchStack.pop(); // Eliminamos el TRY ya que encontramos su CATCH correspondiente
@@ -48,6 +66,7 @@ public class VBScriptParser {
                     }
                     break;
                 case END_TRY:
+                    stats.endTryCount++;
                     if (tryCatchStack.isEmpty() || tryCatchStack.peek().getType() != Token.Type.CATCH_EXCEPTION) {
                         errorReporter.report(token.getLineNumber(), "END TRY without a preceding CATCH.");
                     } else {
@@ -55,20 +74,23 @@ public class VBScriptParser {
                         tryCatchStack.pop(); // Eliminamos el CATCH ya que encontramos su END TRY correspondiente
                     }
                     break;
-                case ASSIGNMENT:
-                case OTHER:
-                    // Perform specific validations for each type of token
-                    // For example:
-                    // validateSubMain(token);
-                    // validateDimStatement(token);
-                    // etc.
-                    break;
+                // Otros casos y validaciones específicas aquí
                 default:
-                    // Handle any other tokens or unexpected cases
                     break;
             }
             
         }
+
+        openStructuresValidation();
+    }
+
+    private void openStructuresValidation() {
+        // Verificar si hay estructuras Sub Main sin cerrar
+        if (!subMainStack.isEmpty()) {
+            Token unclosedToken = subMainStack.peek();
+            errorReporter.report(unclosedToken.getLineNumber(), "SUB MAIN sin cerrar.");
+        }
+
         // Verificar si hay estructuras TRY-CATCH sin cerrar
         if (!tryCatchStack.isEmpty()) {
             Token unclosedToken = tryCatchStack.peek();
@@ -82,21 +104,17 @@ public class VBScriptParser {
         boolean moduleStartFound = false;
         boolean moduleEndFound = false;
         
-
-
         for (Token token : tokens) {
-            System.out.println("Processing token: " + token.getType() + " - " + token.getText());
-            
+            System.out.println("Revisando token: " + token.getType() + " - " + token.getText());
             if (moduleEndFound && token.getType() != Token.Type.COMMENT) {
-                // Report error if we find tokens other than COMMENT after 'End Module'
-                errorReporter.report(token.getLineNumber(), "Invalid token found after 'End Module'. Only comments are allowed.");
+                errorReporter.report(token.getLineNumber(), "Token invalido encontrado despues de 'End Module'. Solo comentarios son permitidos");
             }
             
             
             if (token.getType() == Token.Type.MODULE_PROGRAM) {
                 if (moduleStartFound) {
     
-                    errorReporter.report(token.getLineNumber(), "Multiple 'Module Program' declarations found.");
+                    errorReporter.report(token.getLineNumber(), "Multiples declaraciones de 'Module Program' encontradas.");
                 } else {
                     moduleStartFound = true;
                 }
@@ -104,7 +122,7 @@ public class VBScriptParser {
             if (token.getType() == Token.Type.END_MODULE) {
                 if (moduleEndFound) {
             
-                    errorReporter.report(token.getLineNumber(), "Multiple 'End Module' declarations found.");
+                    errorReporter.report(token.getLineNumber(), "Multiples declaraciones de 'End Module' encontradas.");
                 } else {
                     moduleEndFound = true;
                 }
@@ -112,30 +130,29 @@ public class VBScriptParser {
             
             if (!moduleStartFound && (token.getType() != Token.Type.IMPORT && token.getType() != Token.Type.COMMENT)) {
                 if (token.getType() == Token.Type.END_MODULE){
-                    errorReporter.report(token.getLineNumber(), "'End Module' declaration found before 'Module Program'.");
+                    errorReporter.report(token.getLineNumber(), "Declaración 'End Module' encontrada antes de 'Module Program'.");
                 } else {
-                    errorReporter.report(token.getLineNumber(), "Invalid token found before 'Module Program'. Only 'Imports' and comments are allowed.");
+                    errorReporter.report(token.getLineNumber(), "Token invalido encontrado antes de 'Module Program'. Solo 'Imports' y comentarios son permitidos.");
                 }
-            }
-
-            if (token.getLineNumber() == 36){
-                System.out.println("Token: " + token.getType() + " - " + token.getText());
-            }
-            
+            }            
         }
 
-        // If 'Module Program' was not found, report it
         if (!moduleStartFound) {
-            errorReporter.report(1, "'Module Program' declaration is missing.");
+            errorReporter.report(1, "Falta declaración de 'Module Program'.");
         }
 
-        // If 'End Module' was not found, report it
         if (!moduleEndFound) {
-
-            errorReporter.report(1, "'End Module' declaration is missing.");
+            errorReporter.report(1, "Falta declaración de 'End Module'.");
         }
     }
 
+    private void validateSubMain(Token token) {
+        String text = token.getText();
+        if (!text.matches("\\bSub\\s+Main\\s*\\(\\s*([^()]*(\\(\\s*[^()]*\\s*\\))?[^()]*)\\s*\\)\\s*$")) {
+            errorReporter.report(token.getLineNumber(), "Declaración SUB MAIN inválida.");
+        }
+    }
+    
 
     private void validateModuleProgram() {
         boolean firstModuleProgramFound = checkForFirstModuleProgram();
@@ -156,11 +173,9 @@ public class VBScriptParser {
                 if (!firstModuleProgramFound) {
                     firstModuleProgramFound = true;
                 } else {
-                    // Found a second "Module Program", stop and let the duplicate checker handle it
                     break;
                 }
             } else if (!firstModuleProgramFound && (token.getType() != Token.Type.COMMENT && token.getType() != Token.Type.IMPORT)) {
-                // Log error: no tokens other than comments or imports are allowed before "Module Program"
                 errorReporter.report(token.getLineNumber(), "Only comments or imports are allowed before 'Module Program'.");
             }
         }
@@ -175,7 +190,6 @@ public class VBScriptParser {
         for (Token token : tokens) {
             if (token.getType() == Token.Type.MODULE_PROGRAM) {
                 if (firstModuleProgramFound) {
-                    // Log error: Duplicate "Module Program" declaration
                     errorReporter.report(token.getLineNumber(), "'Module Program' has already been declared.");
                     duplicateFound = true;
                 } else {

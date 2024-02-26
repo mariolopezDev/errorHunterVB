@@ -1,10 +1,8 @@
 Imports System
-''''Test Load
 Imports System.IO
-'Inicio del c�digo para leer un archivo
-Module Program
 
-    Sub Main(args As String())
+Modle Program
+    Sub Main (args As String())
         Console.WriteLine("==========================================================")
         Console.WriteLine("        Este codigo lo que hace es leer un archivo")
         Console.WriteLine("==========================================================")
@@ -20,7 +18,6 @@ Module Program
             While Not Bandera
                 Lineatexto = LecturaArchivo.ReadLine()
                 If Lineatexto Is Nothing Then
-                
                     Bandera = True
                 Else
                     Console.WriteLine(Lineatexto)
@@ -32,6 +29,6 @@ Module Program
             Console.WriteLine("Ha ocurrido un inconveniente " + problema.Message())
         End Try
         Console.WriteLine("==========================================================")
-    End Sub
-
+    End Sb
+End Module
 'Fin del c�digo para leer un archivo
